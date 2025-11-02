@@ -1,0 +1,72 @@
+services:
+  postify-webserver:
+    container_name: postify-webserver
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./etc/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./data/logs/nginx:/var/log/nginx
+    depends_on:
+      - postify-app
+    networks:
+      - postify-network
+
+  postify-app:
+    container_name: postify-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html:delegated
+      - ./data/logs/php:/var/www/html/storage/logs
+      - ./phpunit.xml:/var/www/html/phpunit.xml
+      - ./tests:/var/www/html/tests
+      - ${PHP_INI_PATH:-./etc/php/php.ini}:/usr/local/etc/php/conf.d/99-custom.ini:ro
+    env_file:
+      - .env
+    ports:
+      - "9003:9003"
+    networks:
+      - postify-network
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  postify-database:
+    container_name: postify-database
+    image: mysql:8.0.34
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./data/db/mysql:/docker-entrypoint-initdb.d
+    ports:
+      - "3307:3306"
+    networks:
+      - postify-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  postify-network:
+    name: postify-network
+    driver: bridge
+
+volumes:
+  db_data:
+    name: postify-db-data
