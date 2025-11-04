@@ -1,7 +1,7 @@
 services:
-  postify-webserver:
-    container_name: postify-webserver
+  nginx:
     image: nginx:stable-alpine
+    container_name: postify_nginx
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -10,15 +10,13 @@ services:
       - ./etc/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./data/logs/nginx:/var/log/nginx
     depends_on:
-      - postify-app
-    networks:
-      - postify-network
+      - app
 
-  postify-app:
-    container_name: postify-app
+  app:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: postify_app
     restart: unless-stopped
     volumes:
       - ./:/var/www/html:delegated
@@ -30,17 +28,15 @@ services:
       - .env
     ports:
       - "9003:9003"
-    networks:
-      - postify-network
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 10s
       timeout: 5s
       retries: 3
 
-  postify-database:
-    container_name: postify-database
+  database:
     image: mysql:8.0.34
+    container_name: postify_db
     restart: unless-stopped
     env_file:
       - .env
@@ -54,19 +50,11 @@ services:
       - ./data/db/mysql:/docker-entrypoint-initdb.d
     ports:
       - "3307:3306"
-    networks:
-      - postify-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-networks:
-  postify-network:
-    name: postify-network
-    driver: bridge
-
 volumes:
   db_data:
-    name: postify-db-data

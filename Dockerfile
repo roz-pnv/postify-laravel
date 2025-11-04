@@ -1,17 +1,12 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
-    bash \
     git \
     unzip \
     curl \
     libzip-dev \
     oniguruma-dev \
-    nodejs \
-    npm \
-    zip \
-    supervisor \
-    && docker-php-ext-install pdo pdo_mysql mbstring bcmath zip exif pcntl
+    && docker-php-ext-install pdo pdo_mysql mbstring zip
 
 WORKDIR /var/www/html
 
