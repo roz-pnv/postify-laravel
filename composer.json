@@ -1,5 +1,4 @@
 {
-    "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/rest-api",
     "type": "project",
     "description": "A clean Laravel REST API backend.",
