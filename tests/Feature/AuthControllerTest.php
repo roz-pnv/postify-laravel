@@ -5,14 +5,12 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PHPUnit\Framework\Attributes\Test;
 
 class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[Test]
-    public function user_can_register_successfully()
+    public function test_user_can_register_successfully()
     {
         $payload = [
             'username' => 'test_user',
@@ -21,7 +19,7 @@ class AuthControllerTest extends TestCase
             'password_confirmation' => 'password123',
         ];
 
-        $response = $this->postJson('/api/register', $payload);
+        $response = $this->postJson('/api/auth/register', $payload);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -35,15 +33,14 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    #[Test]
-    public function user_can_login_with_valid_credentials()
+    public function test_user_can_login_with_valid_credentials()
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson('/api/auth/login', [
             'email' => $user['email'],
             'password' => "password123",
         ]);
@@ -56,15 +53,14 @@ class AuthControllerTest extends TestCase
     }
 
 
-    #[Test]
-    public function login_fails_with_invalid_password()
+    public function test_login_fails_with_invalid_password()
     {
         $user = User::factory()->create([
             'email' => 'fail@example.com',
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson('/api/auth/login', [
             'email' => $user['email'],
             'password' => 'wrong_password',
         ]);
@@ -75,8 +71,7 @@ class AuthControllerTest extends TestCase
              ]);
     }
 
-    #[Test]
-    public function authenticated_user_can_logout()
+    public function test_authenticated_user_can_logout()
     {
         $user = User::factory()->create();
         $token = $user->createToken('api-token', ['*'], now()->addMinutes(30))->plainTextToken;
@@ -84,7 +79,7 @@ class AuthControllerTest extends TestCase
         $response = $this->withHeader(
             'Authorization',
             'Bearer ' . $token
-        )->postJson('/api/logout');
+        )->postJson('/api/auth/logout');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -92,10 +87,9 @@ class AuthControllerTest extends TestCase
             ]);
     }
 
-    #[Test]
-    public function unauthenticated_user_cannot_logout()
+    public function test_unauthenticated_user_cannot_logout()
     {
-        $response = $this->postJson('/api/logout');
+        $response = $this->postJson('/api/auth/logout');
 
         $response->assertStatus(401)
             ->assertJson([
