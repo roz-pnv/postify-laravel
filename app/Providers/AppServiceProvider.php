@@ -7,10 +7,6 @@ use Illuminate\Routing\ResponseFactory;
 use Illuminate\Support\ServiceProvider;
 use stdClass;
 
-
-/**
- * @method static JsonResponse api(array $data = null, ?bool $success = null, int $status = 200)
- */
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
