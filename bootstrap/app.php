@@ -20,10 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
     {
         $exceptions->render(function (ValidationException $e, $request) {
             if ($request->is('api/*')) {
-                return response()->json([
+                return response()->api([
                     'message' => 'Validation failed',
                     'errors' => $e->errors(),
-                ], 422);
+                ], status: 422);
             }
 
             return null;
@@ -31,9 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ModelNotFoundException $e, $request) {
             if ($request->is('api/*')) {
-                return response()->json([
+                return response()->api([
                     'message' => 'Resource not found',
-                ], 404);
+                ], status: 404);
             }
 
             return null;
@@ -41,9 +41,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
-                return response()->json([
+                return response()->api([
                     'message' => 'Unauthenticated or token expired.',
-                ], 401);
+                ], status: 401);
             }
 
             return null;
@@ -51,10 +51,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (Throwable $e, $request) {
             if ($request->is('api/*')) {
-                return response()->json([
+                return response()->api([
                     'message' => 'Internal Server Error',
                     'error' => app()->environment('local') ? $e->getMessage() : null,
-                ], 500);
+                ], status: 500);
             }
 
             return null;

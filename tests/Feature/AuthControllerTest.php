@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 
 class AuthControllerTest extends TestCase
 {
@@ -23,9 +24,18 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'message',
-                'token',
-                'user',
+                'success',
+                'data' => [
+                    'token',
+                    'user' => [
+                        'id',
+                        'username',
+                        'email',
+                    ],
+                ],
+            ])
+            ->assertJson([
+                'success' => true,
             ]);
 
         $this->assertDatabaseHas('users', [
@@ -37,27 +47,36 @@ class AuthControllerTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => 'password123',
+            'password' => Hash::make('password123'),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
             'email' => $user['email'],
-            'password' => "password123",
+            'password' => 'password123',
         ]);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'message',
-                'token',
+                'success',
+                'data' => [
+                    'token',
+                    'user' => [
+                        'id',
+                        'username',
+                        'email',
+                    ],
+                ],
+            ])
+            ->assertJson([
+                'success' => true,
             ]);
     }
-
 
     public function test_login_fails_with_invalid_password()
     {
         $user = User::factory()->create([
             'email' => 'fail@example.com',
-            'password' => 'password123',
+            'password' => Hash::make('password123'),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
@@ -65,10 +84,13 @@ class AuthControllerTest extends TestCase
             'password' => 'wrong_password',
         ]);
 
-        $response->assertStatus(200)
-             ->assertJson([
-                 'message' => 'The provided credentials are incorrect.',
-             ]);
+        $response->assertStatus(401)
+            ->assertJson([
+                'success' => false,
+                'data' => [
+                    'message' => 'The provided credentials are incorrect.',
+                ],
+            ]);
     }
 
     public function test_authenticated_user_can_logout()
@@ -83,7 +105,10 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'message' => 'You have been logged out.',
+                'success' => true,
+                'data' => [
+                    'message' => 'You have been logged out.',
+                ],
             ]);
     }
 
@@ -93,7 +118,10 @@ class AuthControllerTest extends TestCase
 
         $response->assertStatus(401)
             ->assertJson([
-                'message' => 'Unauthenticated or token expired.',
+                'success' => false,
+                'data' => [
+                    'message' => 'Unauthenticated or token expired.',
+                ],
             ]);
     }
 }
