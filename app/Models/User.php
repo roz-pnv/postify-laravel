@@ -3,15 +3,13 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * @method static Builder|User create(array $attributes)
- * @method static Builder where(string $column, mixed $value)
+ * @mixin IdeHelperUser
  */
 class User extends Authenticatable
 {
