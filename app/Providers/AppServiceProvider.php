@@ -16,11 +16,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(ResponseFactory $response): void
     {
-        $response->macro('api', function (
-            array $data = null,
-            ?bool $success = null,
-            int $status = 200
-        ):JsonResponse {
+        $response->macro('api', function (array $data = null, ?bool $success = null, int $status = 200):JsonResponse {
             if (is_null($success)) {
                 $success = $status >= 200 && $status < 400;
             }
